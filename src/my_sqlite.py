@@ -1,32 +1,15 @@
-import asyncio
 import sqlite3
+from os.path import join, dirname, abspath
 
-DB = '../proxy.db'
-PROXY_TABLE = 'proxy_ip'
+DB_SQLITE = 'proxy.db'
+DB_SQLITE_PATH = join(dirname(dirname(abspath(__file__))), DB_SQLITE)
 
-
-def create_proxy_table():
-    conn = sqlite3.connect(DB, isolation_level=None)
-    c = conn.cursor()
-    c.execute(
-        f"""
-            CREATE TABLE IF NOT EXISTS {PROXY_TABLE} (
-                idx INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-                ip TEXT(15) NOT NULL,
-                port INTEGER NOT NULL,
-                CHECK (LENGTH(ip)<= 15),
-                CHECK (LENGTH(port)<= 5),
-                CONSTRAINT {PROXY_TABLE}_UN UNIQUE (ip,port)
-            );
-        """
-    )
-    conn.commit()
-    conn.close()
+TABLE_PROXY_IP = 'proxy_ip'
 
 
 def with_conn(func):
     def a(*args, **kwargs):
-        conn = sqlite3.connect(DB)
+        conn = sqlite3.connect(DB_SQLITE_PATH)
         try:
             print(func.__name__)
             return func(conn, *args, **kwargs)
@@ -37,28 +20,46 @@ def with_conn(func):
 
 
 @with_conn
+def create_proxy_table(conn):
+    c = conn.cursor()
+    c.execute(
+        f"""
+            CREATE TABLE IF NOT EXISTS {TABLE_PROXY_IP} (
+                idx INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+                ip TEXT(15) NOT NULL,
+                port INTEGER NOT NULL,
+                CHECK (LENGTH(ip)<= 15),
+                CHECK (LENGTH(port)<= 5),
+                CONSTRAINT {TABLE_PROXY_IP}_UN UNIQUE (ip,port)
+            );
+        """
+    )
+    conn.commit()
+
+
+@with_conn
 def select_all_proxy(conn):
     cur = conn.cursor()
-    cur.execute(f'select ip, port from {PROXY_TABLE}')
+    cur.execute(f'select ip, port from {TABLE_PROXY_IP}')
     return cur.fetchall()
 
 
 @with_conn
 def migrate(conn):
     cur = conn.cursor()
-    cur.execute(f'select ip, port from {PROXY_TABLE}')
+    cur.execute(f'select ip, port from {TABLE_PROXY_IP}')
     return cur.fetchall()
 
 
 @with_conn
-def insert_proxy_row(conn, *rows: tuple):
+def bulk_insert_proxy(conn, *rows: tuple):
     all_proxy = select_all_proxy()
 
     inter = set(all_proxy).intersection(set(rows))
     add_proxy = tuple(set(rows) - set(all_proxy))
     print(f'add: {len(add_proxy)}, exist: {len(inter)}')
 
-    conn.executemany(f'insert into {PROXY_TABLE}(ip, port) values(?, ?);', add_proxy)
+    conn.executemany(f'insert into {TABLE_PROXY_IP}(ip, port) values(?, ?);', add_proxy)
     conn.commit()
     conn.close()
 

@@ -120,7 +120,5 @@ def crawl(proxy_func):
 
 
 if __name__ == '__main__':
-    # crawl(proxyhub)
+    crawl(proxyhub)
     crawl(free_proxy_list)
-
-    pass
