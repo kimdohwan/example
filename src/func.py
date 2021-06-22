@@ -211,17 +211,49 @@ def check_alive():
     ts = [threading.Thread(name=f'WORKER{i + 1}', target=t.request, args=(url,), kwargs={'req_kwargs': {
         'cookies': cookies,
         'headers': headers}, 'proxy': True})
-          for i in range(1000)]
+          for i in range(3)]
     for t in ts:
         t.start()
 
     for t in ts:
         t.join()
 
-
     # res = t.request(, req_kwargs={'cookies': cookies, 'headers': headers}, proxy=True)  # sub thread의 run 메서드를 호출
 
     print(1)
+
+
+class NoProxy(Exception):
+    pass
+
+
+def req(q):
+    ip, port = None, None
+    while True:
+        req_info = q.get()
+        # req_info['method']
+        # req_info['url']
+        # req_info['kwargs']
+        try:
+            if not ip and not port:
+                with lock:
+                    raise NoProxy
+
+            session = requests.Session()
+            session.proxies = {'http': f'http://{ip}:{port}', 'https': f'https://{ip}:{port}'}
+
+            default_kwargs = {'timeout': 60}
+            try:
+                method_func = getattr(session, req_info['method'])
+                method_func(req_info['method'], req_info['url'], **req_info['kwargs'], **default_kwargs)
+            except Exception as e:
+                print(e)
+                return None
+            else:
+                print('success')
+                return res
+        except NoProxy:
+            ip, port = 1, 2
 
 
 if __name__ == '__main__':
