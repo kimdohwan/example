@@ -1,10 +1,12 @@
 import sqlite3
 from os.path import join, dirname, abspath
 
-DB_SQLITE = 'proxy.db'
+# DB_SQLITE = 'proxy.db'
+DB_SQLITE = 'proxy_test.db'
 DB_SQLITE_PATH = join(dirname(dirname(abspath(__file__))), DB_SQLITE)
 
 TABLE_PROXY_IP = 'proxy_ip'
+TABLE_PROXY_HISTORY = 'proxy_history'
 
 
 def with_conn(func):
@@ -23,6 +25,11 @@ def with_conn(func):
 def create_proxy_table(conn):
     c = conn.cursor()
     c.execute(
+        """
+        PRAGMA foreign_keys = ON
+        """
+    )
+    c.execute(
         f"""
             CREATE TABLE IF NOT EXISTS {TABLE_PROXY_IP} (
                 idx INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
@@ -34,7 +41,26 @@ def create_proxy_table(conn):
             );
         """
     )
+    c.execute(
+        f"""
+            CREATE TABLE IF NOT EXISTS {TABLE_PROXY_HISTORY} (
+            idx INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+            proxy_ip_idx INTEGER NOT NULL,
+            content TEXT(100) NOT NULL,
+            url TEXT(100),
+            CONSTRAINT {TABLE_PROXY_HISTORY}_FK FOREIGN KEY (proxy_ip_idx) REFERENCES {TABLE_PROXY_IP}(idx) ON DELETE CASCADE
+            );
+        """
+    )
+
     conn.commit()
+
+
+# @with_conn
+# def create_proxy_table(conn):
+#     c = conn.cursor()
+#
+#     conn.commit()
 
 
 @with_conn
@@ -66,4 +92,5 @@ def bulk_insert_proxy(conn, *rows: tuple):
 
 if __name__ == '__main__':
     # insert_proxy_row((1, 2), (3, 4))
+    create_proxy_table()
     pass
