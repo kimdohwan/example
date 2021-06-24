@@ -1,23 +1,14 @@
 import re
-import threading
 
 import pandas as pd
 import requests
 
-from my_sqlite import select_all_proxy, bulk_insert_proxy
+from src.func_etc import Func
 
 REGEX_IP_PORT = r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\:\d{1,5}'
 
 
-def print_func_name(func):
-    def a(*args, **kwargs):
-        print(func.__name__)
-        return func(*args, **kwargs)
-
-    return a
-
-
-@print_func_name
+@Func.print_func_name
 def free_proxy_list():
     url = 'https://free-proxy-list.net/'
 
@@ -57,7 +48,7 @@ def free_proxy_list():
     yield tuple(li)
 
 
-@print_func_name
+@Func.print_func_name
 def proxyhub():
     def get_res(_page):
         headers = {
@@ -114,48 +105,6 @@ def proxyhub():
                 break
 
 
-@print_func_name
-def crawl(proxy_func):
-    for tp in proxy_func():
-        bulk_insert_proxy(*tp)
-
-
-def proxy_validation():
-    url = 'https://finance.naver.com/'
-    headers = {
-        'authority': 'finance.naver.com',
-        'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.114 Safari/537.36',
-        'sec-fetch-site': 'same-origin',
-        'sec-fetch-mode': 'navigate',
-        'sec-fetch-dest': 'document',
-        'referer': 'https://finance.naver.com/sise/',
-        'accept-language': 'ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7',
-    }
-    th_list = []
-    for ip, port in select_all_proxy():
-        proxy_validation_exec(ip, port, url, headers=headers)
-
-        th = threading.Thread(target=proxy_validation_exec, args=(ip, port, url, ), kwargs={'headers': headers})
-
-    for th in th_list:
-        th.start()
-
-    for th in th_list:
-        th.join()
-
-
-def proxy_validation_exec(ip, port, url, **kwargs):
-    session = requests.Session()
-    session.proxies = {
-        'http': f'http://{ip}:{port}',
-        'https': f'https://{ip}:{port}',
-    }
-
-    res = requests.get(url, **kwargs)
-    res.raise_for_status()
-
-
-
-if __name__ == '__main__':
-    crawl(proxyhub)
-    crawl(free_proxy_list)
+# if __name__ == '__main__':
+#     crawl(proxyhub)
+#     crawl(free_proxy_list)

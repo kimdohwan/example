@@ -1,13 +1,14 @@
 import random
 import threading
-import time
-from contextlib import contextmanager
 from queue import Queue
 
 import requests
 
-from src.my_sqlite import select_all_proxy
-from src.naver.finance_req import ItemFrgn, ReqBase
+from src.func_etc import Func
+from src.modules.my_sqlite import select_all_proxy, bulk_insert_proxy
+from src.modules.site_naver_finance import ItemFrgn, ReqBase
+
+TIMEOUT = 30
 
 lock = threading.Lock()
 
@@ -80,16 +81,55 @@ lock = threading.Lock()
 #     # res = t.request(, req_kwargs={'cookies': cookies, 'headers': headers}, proxy=True)  # sub thread의 run 메서드를 호출
 #
 #     print(1)
+#
+#
+# @Func.print_func_name
+# def proxy_validation():
+#     url = 'https://finance.naver.com/'
+#     headers = {
+#         'authority': 'finance.naver.com',
+#         'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
+#                       'AppleWebKit/537.36 (KHTML, like Gecko) '
+#                       'Chrome/91.0.4472.114 '
+#                       'Safari/537.36',
+#         'sec-fetch-site': 'same-origin',
+#         'sec-fetch-mode': 'navigate',
+#         'sec-fetch-dest': 'document',
+#         'referer': 'https://finance.naver.com/sise/',
+#         'accept-language': 'ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7',
+#     }
+#     th_list = []
+#     for ip, port in select_all_proxy():
+#         proxy_validation_exec(ip, port, url, headers=headers)
+#
+#         th = threading.Thread(
+#             target=proxy_validation_exec,
+#             args=(ip, port, url,),
+#             kwargs={'headers': headers}
+#         )
+#
+#     for th in th_list:
+#         th.start()
+#
+#     for th in th_list:
+#         th.join()
+#
+#
+# def proxy_validation_exec(ip, port, url, **kwargs):
+#     session = requests.Session()
+#     session.proxies = {
+#         'http': f'http://{ip}:{port}',
+#         'https': f'https://{ip}:{port}',
+#     }
+#
+#     res = requests.get(url, **kwargs)
+#     res.raise_for_status()
 
 
-class Func:
-    @staticmethod
-    @contextmanager
-    def check_time():
-        s = time.time()
-        yield None
-        e = time.time()
-        print(f'{e - s} sec')
+@Func.print_func_name
+def crawl_proxy(proxy_func):
+    for tp in proxy_func():
+        bulk_insert_proxy(*tp)
 
 
 class ProxyReq:
@@ -111,7 +151,7 @@ class ProxyReq:
 
     def req(self, req_q, res_q):
         ip, port = '', ''
-        default_kwargs = {'timeout': 20}
+        default_kwargs = {'timeout': TIMEOUT}
         while True:
             req = req_q.get()
             retry = 0
@@ -155,7 +195,8 @@ class ProxyReq:
         pass
 
 
-if __name__ == '__main__':
+@Func.print_func_name
+def exec_crawl():
     # a = check_alive()
     pr = ProxyReq()
     req_if_list = [ItemFrgn('035720', 1) for _ in range(5)]
@@ -165,7 +206,8 @@ if __name__ == '__main__':
     for req_if in req_if_list:
         req_q.put_nowait(req_if)
 
-    ts = [threading.Thread(name=f'WORKER{i + 1}', target=pr.req, args=(req_q, res_q, )) for i, req_if in enumerate(req_if_list)]
+    ts = [threading.Thread(name=f'WORKER{i + 1}', target=pr.req, args=(req_q, res_q,)) for i, req_if in
+          enumerate(req_if_list)]
     for t in ts:
         t.start()
 
@@ -173,5 +215,8 @@ if __name__ == '__main__':
         req_if = res_q.get()
         print(req_if)
 
-    pass
-
+# if __name__ == '__main__':
+#     '''crawl proxy'''
+#     from src.crawl_proxy import proxyhub, free_proxy_list
+#     crawl_proxy(proxyhub)
+#     crawl_proxy(free_proxy_list)
