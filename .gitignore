@@ -9,3 +9,5 @@ data
 .idea
 
 ignore
+
+__pycache__

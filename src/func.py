@@ -4,9 +4,9 @@ from queue import Queue
 
 import requests
 
-from src.func_etc import Func
+from src.modules.func_etc import Func
 from src.modules.my_sqlite import select_all_proxy, bulk_insert_proxy
-from src.modules.site_naver_finance import ItemFrgn, ReqBase
+from src.scrape.site_naver_finance import ItemFrgn, ReqBase
 
 TIMEOUT = 30
 
@@ -215,8 +215,11 @@ def exec_crawl():
         req_if = res_q.get()
         print(req_if)
 
+
 # if __name__ == '__main__':
-#     '''crawl proxy'''
-#     from src.crawl_proxy import proxyhub, free_proxy_list
-#     crawl_proxy(proxyhub)
-#     crawl_proxy(free_proxy_list)
+#     from src.scrape.site_proxy import free_proxy_list
+
+    #     '''crawl proxy'''
+    #     from src.crawl_proxy import proxyhub, free_proxy_list
+    #     crawl_proxy(proxyhub)
+    # crawl_proxy(free_proxy_list)

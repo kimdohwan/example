@@ -1,3 +1,10 @@
+__all__ = [
+    'ReqBase',
+    'ItemSiseDay',
+    'ItemFrgn',
+]
+
+
 class ReqBase:
     method: str = None
     url: str = None
@@ -102,6 +109,6 @@ class ItemFrgn(ReqBase):
 
 if __name__ == '__main__':
     # req_info = ItemSiseDay('035720', 1)  # 카카오
-    # req_info = ItemFrgn('035720', 1)
+    req_info = ItemFrgn('035720', 1)
 
     pass

@@ -3,7 +3,7 @@ import re
 import pandas as pd
 import requests
 
-from src.func_etc import Func
+from src.modules.func_etc import Func
 
 REGEX_IP_PORT = r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\:\d{1,5}'
 
@@ -106,5 +106,5 @@ def proxyhub():
 
 
 # if __name__ == '__main__':
-#     crawl(proxyhub)
-#     crawl(free_proxy_list)
+#     proxyhub()
+#     free_proxy_list()

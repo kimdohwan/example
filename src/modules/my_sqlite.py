@@ -83,6 +83,8 @@ def bulk_insert_proxy(conn, *rows: tuple):
     conn.close()
 
 
+create_proxy_table()
+
 # if __name__ == '__main__':
 #     # insert_proxy_row((1, 2), (3, 4))
 #     # create_proxy_table()
