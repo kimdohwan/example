@@ -2,10 +2,10 @@
 
 venv
 
-data
+data/*
 
 .idea
 
-ignore
+ignore/*
 
 __pycache__
