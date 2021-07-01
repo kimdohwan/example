@@ -1,29 +1,9 @@
+from src.modules.func_etc import ReqBase
+
 __all__ = [
-    'ReqBase',
     'ItemSiseDay',
     'ItemFrgn',
 ]
-
-
-class ReqBase:
-    method: str = None
-    url: str = None
-
-    class ReqBaseException:
-        pass
-
-    def __init__(self):
-        self._res = None
-
-    @property
-    def req_kwargs(self):
-        raise Exception('req_kwargs() is not defined')
-
-    def is_valid(self, res):
-        raise Exception('is_valid() is not defined')
-
-    def set_res(self, res):
-        self._res = res
 
 
 class ItemSiseDay(ReqBase):

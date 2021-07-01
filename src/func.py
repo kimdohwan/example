@@ -4,9 +4,9 @@ from queue import Queue
 
 import requests
 
-from src.modules.func_etc import Func
+from src.modules.func_etc import Func, ReqBaseException
 from src.modules.my_sqlite import select_all_proxy, bulk_insert_proxy
-from src.scrape.site_naver_finance import ItemFrgn, ReqBase
+from src.scrape.site_naver_finance import ItemFrgn
 
 TIMEOUT = 30
 
@@ -179,7 +179,7 @@ class ProxyReq:
                         if retry % 10 == 0:
                             print(threading.current_thread().name, f'{retry=}, {req.url, req.req_kwargs}')
                         # print(threading.current_thread().name, e)
-                        if isinstance(e, ReqBase.ReqBaseException):
+                        if isinstance(e, ReqBaseException):
                             raise
                         else:
                             continue
