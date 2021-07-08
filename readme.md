@@ -7,5 +7,7 @@
         
     - API 사용 
         - CorpCode(공시 정보)
-            - path : data/CorpCode/{날짜}.{requests args/kwargs}
+            - sample data path : data/CorpCode/{날짜}.{requests args/kwargs}
+        - ApiList(공시 검색)
+            - sample data path
         
