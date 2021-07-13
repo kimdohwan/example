@@ -1,8 +1,8 @@
 def solution(n):
     A = [1, 2]
     for i in range(n - 2):
-        A.append((A[-1] + A[-2]) % 10007)
-    return A[-1]
+        A.append(A[-1] + A[-2])
+    return A[n - 1] % 10007
 
 
 # RuntimeError
@@ -16,4 +16,4 @@ def solution(n):
 
 
 while True:
-    print(solution(int(input())) % 10007)
+    print(solution(int(input())))
